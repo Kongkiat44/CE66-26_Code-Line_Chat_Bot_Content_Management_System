@@ -1,0 +1,51 @@
+#Use the official Python image as the base image
+FROM python:3.9-slim AS builder
+
+#Set the working directory
+WORKDIR /app
+
+#Set timezone environment variable to be Asia/Bangkok (GMT+7)
+ENV TZ=Asia/Bangkok
+
+#Copy and install Python dependencies
+COPY requirements.txt /app/
+RUN pip install --no-cache-dir -r requirements.txt
+
+#Copy the application code
+COPY . /app/
+
+#Install Nginx & Cron using apt-get command
+RUN apt-get update && apt-get install -y nginx cron
+
+#Copy custom nginx config file to nginx config path
+COPY nginx.conf /etc/nginx/sites-available/default
+
+#Set cron job to run schedule_leftgroup.py at midnight every day
+RUN echo "0 0 */1 * * /app/script/run-leftgroup.sh >> /var/log/cron.log 2>&1" > /etc/cron.d/job-leftgroup
+
+#Set permission on cron job file
+RUN chmod 0644 /etc/cron.d/job-leftgroup
+
+#Create directory to store shell script files
+RUN mkdir /app/script
+
+#Create directory to mapped and read SSL Certificate files from host machine
+RUN mkdir /app/ssl
+
+#Create shell script for activate cron job
+RUN echo "#!/bin/bash\ntouch /var/log/cron.log\ncrontab -u root /etc/cron.d/job-leftgroup\necho Apply cron job successful" > /app/script/jobscript.sh
+
+#Create shell script for export environment variables for schedule_leftgroup.py when run the script
+RUN echo '#!/bin/bash\nexport SAVE_GRAPH_PATH2="/var/www/linecms/graph/"\nexport SAVE_FACE_PATH2="/var/www/linecms/face/"\nexport SAVE_IMAGE_PATH2="/var/www/linecms/image/"\nexport SAVE_FILE_PATH2="/var/www/linecms/file/"\nexport DATABASE_NAME2="LineCMS"\nexport MONGOSTR="mongodb://mongoservice:27017/LineCMS"\necho Export variables successful' > /app/script/envvar-script.sh
+
+#Create shell script to source environment variables and run file schedule_leftgroup.py
+RUN echo "#!/bin/bash\ncd /app\nsource ./script/envvar-script.sh\n/usr/local/bin/python3 schedule_leftgroup.py >> /var/log/cron.log 2>&1" > /app/script/run-leftgroup.sh
+
+#Make shell scripts executable
+RUN chmod +x /app/script/*.sh
+
+#Expose port 80 and 443 for Nginx service
+EXPOSE 80 443
+
+#Start Nginx service, start cron job, check nginx configuration syntax and start flask app with configuration according to file gunicorn_config.py
+CMD service cron restart && service nginx start && crontab -n /etc/cron.d/job-leftgroup && /app/script/jobscript.sh && nginx -t && gunicorn --config /app/gunicorn_config.py backend:app
