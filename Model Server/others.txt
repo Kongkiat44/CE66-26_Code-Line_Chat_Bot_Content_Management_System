@@ -1,0 +1,7 @@
+python 3.9.6
+RabbitMQ 3.12.6
+Erlang 26.0.2
+
+dlib 19.24.2
+conda install -c conda-forge dlib
+numpy 1.26.0

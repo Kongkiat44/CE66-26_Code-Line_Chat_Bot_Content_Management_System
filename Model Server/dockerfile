@@ -1,0 +1,38 @@
+# Use the official Python image as a parent image
+FROM python:3.9-slim
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Set the timezone to Thailand (Asia/Bangkok)
+ENV TZ=Asia/Bangkok
+
+# Install development tools and libraries
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    git \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy the requirements file into the container at /app
+COPY requirements.txt /app/
+
+# Upgrade pip
+RUN pip install --upgrade pip
+
+# Install any needed packages specified in requirements.txt
+RUN pip install -r requirements.txt
+
+# Copy Api directory contents into the container at /app
+COPY Api /app/Api
+
+# Copy Worker directory contents into the container at /app
+COPY Worker /app/Worker
+
+# Expose port 5000 (for documentation purposes)
+EXPOSE 5000
+
+# Run the Flask application
+CMD ["sh", "-c", "python Api/app.py & python Worker/worker.py"]
