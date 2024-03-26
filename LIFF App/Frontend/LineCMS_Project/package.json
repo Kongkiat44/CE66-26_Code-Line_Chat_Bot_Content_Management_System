@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@syncfusion/ej2-vue-buttons": "^24.2.5"
+  }
+}
