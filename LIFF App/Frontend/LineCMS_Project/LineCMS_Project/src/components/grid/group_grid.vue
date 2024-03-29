@@ -112,7 +112,7 @@
             // declare variable
             const store = useStore()
             const groups =  ref([])
-            const userID = ref("U25f75196c77407768c97fae5a878171d")
+            const userID = ref("")
             const groupSort = ref("ล่าสุด")
             const isLoading = ref(true)
             const groupsSearch = ref([])
@@ -181,10 +181,10 @@
                             userID.value = context.userId;
                         }
                         // if user is not using liff browser, redirect to blank page
-                        // if (context.type != 'utou'){
-                        //     store.dispatch('setBrowserType', context.type);
-                        //     router.push({name:'redirectpage'})
-                        // }
+                        if (context.type != 'utou'){
+                            store.dispatch('setBrowserType', context.type);
+                            router.push({name:'redirectpage'})
+                        }
 
                         // request group list user are in with chat bot by user id
                         const response = await axios.request({
