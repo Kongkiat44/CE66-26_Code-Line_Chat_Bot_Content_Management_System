@@ -1,7 +1,7 @@
 import requests, os
 
 # line chat bot access token
-bot_access_token = "qh0WSTa9eSXLXVLxODyggThkq5KvdUefKH/oU6dmJ4bLWxeacjXAVs0lUmGG02L4TNWQzKciOmvaROExCjL1JLJJOU3WNEBqSD87QRHbcOioU+aUUnbiShV3hcieioHM17ffNVHpLQ/ARaLEMhOXvgdB04t89/1O/w1cDnyilFU="
+bot_access_token = "LINE-BOT-ACCESS-TOKEN"
 
 # rich menu buttons in json data
 richMenuV3 = {
